@@ -1,0 +1,39 @@
+name: servxpert_frontend
+description: ServXpert service provider registration app
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=2.17.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  google_maps_flutter: ^2.5.0
+  cupertino_icons: ^1.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+
+  fonts:
+    - family: Fredoka
+      fonts:
+        - asset: fonts/Fredoka-Regular.ttf
+        - asset: fonts/Fredoka-Bold.ttf
+          weight: 700
+    - family: SansSerif
+      fonts:
+        - asset: fonts/SansSerif-Regular.ttf
+        - asset: fonts/SansSerif-Bold.ttf
+          weight: 700
