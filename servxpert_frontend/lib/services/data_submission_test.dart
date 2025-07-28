@@ -232,7 +232,7 @@ class DataSubmissionTest {
     final testCases = [
       {
         'name': 'Missing Required Fields',
-        'data': {
+        'data': <String, dynamic>{
           'first_name': 'Test',
           'last_name': 'User',
         },
@@ -240,7 +240,7 @@ class DataSubmissionTest {
       },
       {
         'name': 'Invalid Date Format',
-        'data': {
+        'data': <String, dynamic>{
           'first_name': 'Test',
           'last_name': 'User',
           'date_of_birth': 'invalid-date',
@@ -252,7 +252,7 @@ class DataSubmissionTest {
       },
       {
         'name': 'Invalid Phone Number',
-        'data': {
+        'data': <String, dynamic>{
           'first_name': 'Test',
           'last_name': 'User',
           'date_of_birth': '1990-01-01',
@@ -276,7 +276,8 @@ class DataSubmissionTest {
         }
 
         // Convert to FormData for multipart/form-data
-        final formData = FormData.fromMap(testCase['data']);
+        final data = testCase['data'] as Map<String, dynamic>;
+        final formData = FormData.fromMap(data);
 
         final response = await _dio.post(
           submitUrl,
