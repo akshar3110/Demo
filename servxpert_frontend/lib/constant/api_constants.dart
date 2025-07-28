@@ -11,3 +11,4 @@ const String refreshTokenUrl = "$baseUrl/token/refresh/";
 const String verifyTokenUrl = "$baseUrl/token/verify/";
 const String logoutUrl = "$baseUrl/token/logout/";
 const String submitUrl = "$baseUrl/service_provider_details/";
+const String serviceProviderStatusUrl = "$baseUrl/service_provider_details/status/";

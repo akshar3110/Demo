@@ -3,6 +3,11 @@ import 'package:intl/intl.dart';
 import 'package:servxpert_frontend/jobApp/otp_verification.dart';
 import 'package:servxpert_frontend/jobApp/reject_job.dart';
 import '../widgets/bottom_navbar.dart';
+import 'package:servxpert_frontend/auth/auth_service.dart';
+import 'package:servxpert_frontend/userApp/Customers_home_screen.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:servxpert_frontend/services/account_status_service.dart';
 
 class ServiceProvidersHomeScreen extends StatefulWidget {
   const ServiceProvidersHomeScreen({super.key});
@@ -33,6 +38,26 @@ class _ServiceProvidersHomeScreenState
 
   List<Map<String, dynamic>> pendingRequests = [];
   List<Map<String, dynamic>> ongoingOrders = [];
+  final _secureStorage = const FlutterSecureStorage();
+
+  // Function to switch back to customer account using AccountStatusService
+  Future<void> _switchToCustomer() async {
+    try {
+      final success = await AccountStatusService.switchToCustomerWithFlow(context);
+      
+      if (!success) {
+        // The service already handles error messages
+        print("Failed to switch to customer account");
+      }
+    } catch (e) {
+      print("❌ Error switching to customer: $e");
+      Fluttertoast.showToast(
+        msg: "An error occurred while switching accounts",
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,9 +79,13 @@ class _ServiceProvidersHomeScreenState
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  CircleAvatar(
-                    backgroundColor: Colors.white,
-                    child: Icon(Icons.person_2_outlined, color: Colors.black),
+                  // Profile button with account switching
+                  GestureDetector(
+                    onTap: _switchToCustomer,
+                    child: CircleAvatar(
+                      backgroundColor: Colors.white,
+                      child: Icon(Icons.person_2_outlined, color: Colors.black),
+                    ),
                   ),
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,

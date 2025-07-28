@@ -18,6 +18,7 @@ import 'package:servxpert_frontend/widgets/bottom_navbar.dart';
 import 'package:servxpert_frontend/services/logout_service.dart';
 import 'package:servxpert_frontend/constant/api_constants.dart';
 import 'package:servxpert_frontend/constant/colors.dart';
+import 'package:servxpert_frontend/services/account_status_service.dart';
 
 class CustomerProfile extends StatefulWidget {
   final String email;
@@ -56,72 +57,29 @@ class _CustomerProfileState extends State<CustomerProfile> {
     return prefs.getString('profile_photo');
   }
 
+  // Enhanced switching function using AccountStatusService
   void _handleSwipe(BuildContext context) async {
     setState(() => _isLoading = true);
-    final storage = FlutterSecureStorage();
-
-    final result = await switchToServiceProvider(); // attempt switch first
-    print("🔍 switchToServiceProvider result: $result");
-    setState(() => _isLoading = false);
-
-    // CASE 1: Success - Already a Service Provider
-    if (result != null && result['access'] != null) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => ServiceProvidersHomeScreen()),
-      );
-      return;
-    }
-
-    // CASE 2: Not Registered Yet
-    if (result != null &&
-        result['error'] != null &&
-        result['error'].toString().toLowerCase().contains('not registered')) {
-      String accessToken = await storage.read(key: 'access_token') ?? '';
-
-      final email = await storage.read(key: 'email');
-      final firstName = await storage.read(key: 'first_name');
-      final lastName = await storage.read(key: 'last_name');
-      final profilePhoto = await storage.read(key: 'profile_photo');
-
-      final registrationData = ServiceProviderRegistrationData(
-        email: email,
-        firstName: firstName,
-        lastName: lastName,
-        profilePhotoPath: profilePhoto,
-      );
-
-      // Call registration form and wait for result
-      final registered = await Navigator.push<bool>(
-        context,
-        MaterialPageRoute(
-          builder: (_) => RegistrationForm(jwtToken: accessToken),
-        ),
-      );
-
-      // CASE 3: If registered successfully, try switching again
-      if (registered == true) {
-        setState(() => _isLoading = true);
-        final switchAgain = await switchToServiceProvider();
-        setState(() => _isLoading = false);
-
-        if (switchAgain != null && switchAgain['access'] != null) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => ServiceProvidersHomeScreen()),
-          );
-          return;
-        }
+    
+    try {
+      // Use the new account status service for cleaner flow
+      final success = await AccountStatusService.switchToServiceProviderWithFlow(context);
+      
+      if (!success) {
+        // If switching failed, show appropriate message
+        // The service already handles toast messages
+        print("Account switching was not successful");
       }
-    }
-
-    // CASE 4: Show error toast or snackbar
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(result?['error'] ?? 'Something went wrong. Please try again.'),
+    } catch (e) {
+      print("❌ Error in account switching: $e");
+      Fluttertoast.showToast(
+        msg: "An error occurred while switching accounts. Please try again.",
         backgroundColor: Colors.red,
-      ),
-    );
+        textColor: Colors.white,
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
 

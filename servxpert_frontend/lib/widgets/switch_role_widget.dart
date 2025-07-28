@@ -2,6 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:servxpert_frontend/auth/auth_service.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:servxpert_frontend/service_provider/service_providers_home_screen.dart';
+import 'package:servxpert_frontend/userApp/Customers_home_screen.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:servxpert_frontend/profileApp/registration_form.dart';
+import 'package:servxpert_frontend/services/account_status_service.dart';
 
 class SwitchRoleWidget extends StatefulWidget {
   final String currentRole;
@@ -19,6 +24,7 @@ class SwitchRoleWidget extends StatefulWidget {
 
 class _SwitchRoleWidgetState extends State<SwitchRoleWidget> {
   bool _isLoading = false;
+  final _secureStorage = const FlutterSecureStorage();
 
   Future<void> _switchRole() async {
     setState(() {
@@ -26,29 +32,17 @@ class _SwitchRoleWidgetState extends State<SwitchRoleWidget> {
     });
 
     try {
-      Map<String, dynamic>? result;
-
+      bool success = false;
+      
       if (widget.currentRole == 'Customer') {
-        result = await switchToServiceProvider();
+        success = await AccountStatusService.switchToServiceProviderWithFlow(context);
       } else if (widget.currentRole == 'ServiceProvider') {
-        result = await switchToCustomer();
+        success = await AccountStatusService.switchToCustomerWithFlow(context);
       }
 
-      if (result != null) {
-        Fluttertoast.showToast(
-          msg: result['message'] ?? 'Role switched successfully',
-          backgroundColor: Colors.green,
-          textColor: Colors.white,
-        );
-
+      if (success) {
         // Call the callback to refresh the UI
         widget.onRoleSwitched?.call();
-      } else {
-        Fluttertoast.showToast(
-          msg: 'Failed to switch role. Please try again.',
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-        );
       }
     } catch (e) {
       print('Switch role error: $e');

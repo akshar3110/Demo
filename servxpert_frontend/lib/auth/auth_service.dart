@@ -54,7 +54,45 @@ Future<Map<String, dynamic>?> verifyOtp(String email, String otp) async {
   }
 }
 
-// Switch to Service Provider
+// Check Service Provider Verification Status
+Future<Map<String, dynamic>?> checkServiceProviderStatus() async {
+  try {
+    final accessToken = await _secureStorage.read(key: 'access_token');
+    final refreshToken = await _secureStorage.read(key: 'refresh_token');
+
+    if (refreshToken == null) {
+      print("❌ No refresh token found");
+      return {'error': 'Refresh token is missing'};
+    }
+
+    final response = await dio.get(
+      serviceProviderStatusUrl,
+      options: Options(
+        headers: {
+          "Authorization": "Bearer $accessToken",
+          'Content-Type': 'application/json',
+        },
+        validateStatus: (_) => true,
+      ),
+    );
+
+    print("📢 Service Provider Status: ${response.statusCode}");
+    print("📢 Service Provider Status Response: ${response.data}");
+
+    if (response.statusCode == 200) {
+      return response.data;
+    } else if (response.data is Map<String, dynamic>) {
+      return response.data;
+    } else {
+      return {'error': 'Failed to check service provider status'};
+    }
+  } catch (e) {
+    print("❌ Check Service Provider Status Exception: $e");
+    return {'error': e.toString()};
+  }
+}
+
+// Enhanced Switch to Service Provider with verification check
 Future<Map<String, dynamic>?> switchToServiceProvider() async {
   try {
     final accessToken = await _secureStorage.read(key: 'access_token');
