@@ -54,30 +54,91 @@ class _RegistrationPage4State extends State<RegistrationPage4> {
 
       final dio = Dio();
 
+      // Create comprehensive form data with all required fields
       final Map<String, dynamic> formMap = {
-        'first_name': widget.registrationData.firstName,
-        'last_name': widget.registrationData.lastName,
-        'gender': widget.registrationData.gender,
-        'date_of_birth': widget.registrationData.dob,
+        // Basic Information
+        'first_name': widget.registrationData.firstName ?? '',
+        'last_name': widget.registrationData.lastName ?? '',
+        'middle_name': widget.registrationData.middleName ?? '',
+        'gender': widget.registrationData.gender ?? '',
+        'date_of_birth': widget.registrationData.dob ?? '',
+        'phone': widget.registrationData.phone ?? '',
+        'email': widget.registrationData.email ?? '',
+        
+        // Address Information
+        'address': widget.registrationData.address ?? '',
+        'pincode': widget.registrationData.pincode ?? '',
+        
+        // Identity Documents
+        'aadhar_number': widget.registrationData.aadharNumber ?? '',
+        'pan_number': widget.registrationData.panNumber ?? '',
+        
+        // Service Information
+        'selected_service': widget.registrationData.selectedService ?? '',
+        'years_of_experience': widget.registrationData.yearsOfExperience ?? '',
+        
+        // Location Information
+        'latitude': widget.registrationData.latitude?.toString() ?? _latitude.toString(),
+        'longitude': widget.registrationData.longitude?.toString() ?? _longitude.toString(),
+        'service_radius': widget.registrationData.serviceRadius?.toString() ?? _serviceRadius.toString(),
+        
+        // Terms Agreement
+        'agreed_to_terms': widget.registrationData.agreedToTerms?.toString() ?? 'true',
       };
 
-      final path = widget.registrationData.profilePhotoPath;
-
-      if (path != null && path.isNotEmpty) {
-        final file = File(path);
+      // Add profile picture if available
+      final profilePath = widget.registrationData.profilePhotoPath;
+      if (profilePath != null && profilePath.isNotEmpty) {
+        final file = File(profilePath);
         final exists = await file.exists();
 
         if (exists) {
           formMap['profile_pic_url'] = await MultipartFile.fromFile(
-            path,
+            profilePath,
             filename: 'profile.jpg',
           );
         } else {
-          debugPrint("⚠️ File path doesn't exist: $path");
+          debugPrint("⚠️ Profile file path doesn't exist: $profilePath");
         }
       }
 
+      // Add Aadhar document if available
+      final aadharPath = widget.registrationData.aadharFilePath;
+      if (aadharPath != null && aadharPath.isNotEmpty) {
+        final file = File(aadharPath);
+        final exists = await file.exists();
+
+        if (exists) {
+          formMap['aadhar_document'] = await MultipartFile.fromFile(
+            aadharPath,
+            filename: 'aadhar_document.jpg',
+          );
+        } else {
+          debugPrint("⚠️ Aadhar file path doesn't exist: $aadharPath");
+        }
+      }
+
+      // Add profile image file if available
+      if (widget.registrationData.profileImage != null) {
+        formMap['profile_image'] = await MultipartFile.fromFile(
+          widget.registrationData.profileImage!.path,
+          filename: 'profile_image.jpg',
+        );
+      }
+
+      // Add document image file if available
+      if (widget.registrationData.documentImage != null) {
+        formMap['document_image'] = await MultipartFile.fromFile(
+          widget.registrationData.documentImage!.path,
+          filename: 'document_image.jpg',
+        );
+      }
+
       final formData = FormData.fromMap(formMap);
+
+      print("📤 Submitting registration data:");
+      print("📤 Form data keys: ${formMap.keys.toList()}");
+      print("📤 Token: $token");
 
       final response = await dio.post(
         submitUrl,
@@ -87,28 +148,56 @@ class _RegistrationPage4State extends State<RegistrationPage4> {
             'Authorization': 'Bearer $token',
             'Content-Type': 'multipart/form-data',
           },
+          sendTimeout: Duration(seconds: 30),
+          receiveTimeout: Duration(seconds: 30),
         ),
       );
 
+      print("📥 Response status: ${response.statusCode}");
+      print("📥 Response data: ${response.data}");
+
       if (response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration successful!')),
+          const SnackBar(
+            content: Text('Registration successful!'),
+            backgroundColor: Colors.green,
+          ),
         );
         Navigator.popUntil(context, (route) => route.isFirst);
       } else if (response.statusCode == 400) {
         final error = response.data['error'] ?? 'Registration failed!';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error.toString())),
+          SnackBar(
+            content: Text(error.toString()),
+            backgroundColor: Colors.red,
+          ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration failed!')),
+          SnackBar(
+            content: Text('Registration failed! Status: ${response.statusCode}'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
+    } on DioException catch (e) {
+      debugPrint("❌ Dio Error: ${e.message}");
+      debugPrint("❌ Dio Error Status: ${e.response?.statusCode}");
+      debugPrint("❌ Dio Error Data: ${e.response?.data}");
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Network error: ${e.message}'),
+          backgroundColor: Colors.red,
+        ),
+      );
     } catch (e) {
       debugPrint("❌ Registration Error: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     } finally {
       setState(() => _isSubmitting = false);

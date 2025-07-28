@@ -19,6 +19,7 @@ import 'package:servxpert_frontend/services/logout_service.dart';
 import 'package:servxpert_frontend/constant/api_constants.dart';
 import 'package:servxpert_frontend/constant/colors.dart';
 import 'package:servxpert_frontend/services/account_status_service.dart';
+import 'package:servxpert_frontend/services/backend_check_service.dart';
 
 class CustomerProfile extends StatefulWidget {
   final String email;
@@ -74,6 +75,37 @@ class _CustomerProfileState extends State<CustomerProfile> {
       print("❌ Error in account switching: $e");
       Fluttertoast.showToast(
         msg: "An error occurred while switching accounts. Please try again.",
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  // Debug function to test backend connectivity and data submission
+  void _testBackendConnectivity() async {
+    setState(() => _isLoading = true);
+    
+    try {
+      print("🔍 Starting Backend Tests...");
+      
+      // Run backend diagnostics
+      await BackendCheckService.runBackendDiagnostics();
+      
+      // Test data submission
+      await BackendCheckService.testDataSubmission();
+      
+      Fluttertoast.showToast(
+        msg: "Backend tests completed. Check console for results.",
+        backgroundColor: Colors.blue,
+        textColor: Colors.white,
+        toastLength: Toast.LENGTH_LONG,
+      );
+    } catch (e) {
+      print("❌ Backend test error: $e");
+      Fluttertoast.showToast(
+        msg: "Backend test failed: $e",
         backgroundColor: Colors.red,
         textColor: Colors.white,
       );
@@ -243,6 +275,13 @@ class ProfileListSection extends StatelessWidget {
         _sectionHeader("General"),
         _tile(context, Icons.language, 'Language', () {}),
         _tile(context, Icons.delete_outline, 'Clear Cache', () {}),
+        _sectionHeader("Debug"),
+        _tile(context, Icons.bug_report, 'Test Backend', () {
+          // Call the debug function from the parent widget
+          if (context.findAncestorStateOfType<_CustomerProfileState>() != null) {
+            (context.findAncestorStateOfType<_CustomerProfileState>() as _CustomerProfileState)._testBackendConnectivity();
+          }
+        }, color: Colors.orange),
         _sectionHeader("About"),
         _tile(context, Icons.help_outline, 'Help Center', () {}),
         const Divider(height: 10, thickness: 1),
