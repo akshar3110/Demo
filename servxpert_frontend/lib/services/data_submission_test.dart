@@ -39,13 +39,16 @@ class DataSubmissionTest {
       print("📤 Testing minimal data submission...");
       print("📤 Data: $testData");
 
+      // Convert to FormData for multipart/form-data
+      final formData = FormData.fromMap(testData);
+
       final response = await _dio.post(
         submitUrl,
-        data: testData,
+        data: formData,
         options: Options(
           headers: {
             'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
+            'Content-Type': 'multipart/form-data',
           },
           validateStatus: (_) => true,
         ),
@@ -54,10 +57,17 @@ class DataSubmissionTest {
       print("📥 Response status: ${response.statusCode}");
       print("📥 Response data: ${response.data}");
 
-      return response.data;
+      // Handle different response types
+      if (response.data is Map<String, dynamic>) {
+        return response.data;
+      } else if (response.data is String) {
+        return {'error': response.data, 'status': response.statusCode};
+      } else {
+        return {'error': 'Unexpected response format', 'status': response.statusCode};
+      }
     } catch (e) {
       print("❌ Minimal submission error: $e");
-      return null;
+      return {'error': e.toString()};
     }
   }
 
@@ -94,13 +104,16 @@ class DataSubmissionTest {
       print("📤 Testing comprehensive data submission...");
       print("📤 Data: $testData");
 
+      // Convert to FormData for multipart/form-data
+      final formData = FormData.fromMap(testData);
+
       final response = await _dio.post(
         submitUrl,
-        data: testData,
+        data: formData,
         options: Options(
           headers: {
             'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
+            'Content-Type': 'multipart/form-data',
           },
           validateStatus: (_) => true,
         ),
@@ -109,10 +122,17 @@ class DataSubmissionTest {
       print("📥 Response status: ${response.statusCode}");
       print("📥 Response data: ${response.data}");
 
-      return response.data;
+      // Handle different response types
+      if (response.data is Map<String, dynamic>) {
+        return response.data;
+      } else if (response.data is String) {
+        return {'error': response.data, 'status': response.statusCode};
+      } else {
+        return {'error': 'Unexpected response format', 'status': response.statusCode};
+      }
     } catch (e) {
       print("❌ Comprehensive submission error: $e");
-      return null;
+      return {'error': e.toString()};
     }
   }
 
@@ -148,13 +168,16 @@ class DataSubmissionTest {
       print("📤 Testing file upload submission...");
       print("📤 Data: $testData");
 
+      // Convert to FormData for multipart/form-data
+      final formData = FormData.fromMap(testData);
+
       final response = await _dio.post(
         submitUrl,
-        data: testData,
+        data: formData,
         options: Options(
           headers: {
             'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
+            'Content-Type': 'multipart/form-data',
           },
           validateStatus: (_) => true,
         ),
@@ -163,10 +186,17 @@ class DataSubmissionTest {
       print("📥 Response status: ${response.statusCode}");
       print("📥 Response data: ${response.data}");
 
-      return response.data;
+      // Handle different response types
+      if (response.data is Map<String, dynamic>) {
+        return response.data;
+      } else if (response.data is String) {
+        return {'error': response.data, 'status': response.statusCode};
+      } else {
+        return {'error': 'Unexpected response format', 'status': response.statusCode};
+      }
     } catch (e) {
       print("❌ File upload submission error: $e");
-      return null;
+      return {'error': e.toString()};
     }
   }
 
@@ -245,13 +275,16 @@ class DataSubmissionTest {
           continue;
         }
 
+        // Convert to FormData for multipart/form-data
+        final formData = FormData.fromMap(testCase['data']);
+
         final response = await _dio.post(
           submitUrl,
-          data: testCase['data'],
+          data: formData,
           options: Options(
             headers: {
               'Authorization': 'Bearer $token',
-              'Content-Type': 'application/json',
+              'Content-Type': 'multipart/form-data',
             },
             validateStatus: (_) => true,
           ),

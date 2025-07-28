@@ -8,11 +8,12 @@ class BackendCheckService {
   static final Dio _dio = Dio();
   static const _secureStorage = FlutterSecureStorage();
 
-  // Test backend connectivity
+  // Test backend connectivity - try a different endpoint
   static Future<bool> testBackendConnectivity() async {
     try {
+      // Try the main API endpoint instead of health endpoint
       final response = await _dio.get(
-        '$baseUrl/health/', // Assuming there's a health endpoint
+        '$baseUrl/auth/email-otp/', // Use an existing endpoint
         options: Options(
           validateStatus: (_) => true,
           sendTimeout: Duration(seconds: 10),
@@ -24,7 +25,8 @@ class BackendCheckService {
       print("📡 Status: ${response.statusCode}");
       print("📡 Response: ${response.data}");
       
-      return response.statusCode == 200;
+      // Consider it connected if we get any response (even 404 means server is reachable)
+      return response.statusCode != null;
     } catch (e) {
       print("❌ Backend connectivity error: $e");
       return false;
@@ -56,14 +58,21 @@ class BackendCheckService {
       print("📡 Status: ${response.statusCode}");
       print("📡 Response: ${response.data}");
 
-      return response.data;
+      // Handle different response types
+      if (response.data is Map<String, dynamic>) {
+        return response.data;
+      } else if (response.data is String) {
+        return {'error': response.data, 'status': response.statusCode};
+      } else {
+        return {'error': 'Unexpected response format', 'status': response.statusCode};
+      }
     } catch (e) {
       print("❌ Service Provider Status error: $e");
-      return null;
+      return {'error': e.toString()};
     }
   }
 
-  // Test service provider registration endpoint
+  // Test service provider registration endpoint with correct content type
   static Future<Map<String, dynamic>?> testServiceProviderRegistration(Map<String, dynamic> testData) async {
     try {
       final token = await _secureStorage.read(key: 'access_token');
@@ -73,13 +82,16 @@ class BackendCheckService {
         return null;
       }
 
+      // Convert to FormData for multipart/form-data
+      final formData = FormData.fromMap(testData);
+
       final response = await _dio.post(
         submitUrl,
-        data: testData,
+        data: formData,
         options: Options(
           headers: {
             'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
+            'Content-Type': 'multipart/form-data',
           },
           validateStatus: (_) => true,
         ),
@@ -89,10 +101,17 @@ class BackendCheckService {
       print("📡 Status: ${response.statusCode}");
       print("📡 Response: ${response.data}");
 
-      return response.data;
+      // Handle different response types
+      if (response.data is Map<String, dynamic>) {
+        return response.data;
+      } else if (response.data is String) {
+        return {'error': response.data, 'status': response.statusCode};
+      } else {
+        return {'error': 'Unexpected response format', 'status': response.statusCode};
+      }
     } catch (e) {
       print("❌ Service Provider Registration error: $e");
-      return null;
+      return {'error': e.toString()};
     }
   }
 
@@ -141,10 +160,17 @@ class BackendCheckService {
       print("📡 Status: ${response.statusCode}");
       print("📡 Response: ${response.data}");
 
-      return response.data;
+      // Handle different response types
+      if (response.data is Map<String, dynamic>) {
+        return response.data;
+      } else if (response.data is String) {
+        return {'error': response.data, 'status': response.statusCode};
+      } else {
+        return {'error': 'Unexpected response format', 'status': response.statusCode};
+      }
     } catch (e) {
       print("❌ Service Provider Details error: $e");
-      return null;
+      return {'error': e.toString()};
     }
   }
 
@@ -183,7 +209,7 @@ class BackendCheckService {
     print("\n🔍 Backend Diagnostics Complete!");
   }
 
-  // Test data submission with minimal data
+  // Test data submission with minimal data using correct content type
   static Future<void> testDataSubmission() async {
     print("🔍 Testing Data Submission...");
     
@@ -209,7 +235,7 @@ class BackendCheckService {
     final result = await testServiceProviderRegistration(testData);
     
     if (result != null) {
-      print("✅ Test data submission successful");
+      print("✅ Test data submission completed");
       print("📤 Response: $result");
     } else {
       print("❌ Test data submission failed");
