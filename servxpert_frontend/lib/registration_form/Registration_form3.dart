@@ -203,7 +203,8 @@ class _RegistrationFormSkillsAndServicesState
                       TextButton(
                         onPressed: () {
                           Navigator.pop(context); // close dialog
-
+                          // Return true to indicate successful registration
+                          Navigator.pop(context, true);
                         },
                         child: const Text("OK"),
                       ),
@@ -215,6 +216,8 @@ class _RegistrationFormSkillsAndServicesState
               }catch (e) {
                 Navigator.of(context).pop(); // Close loading dialog
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                // Return false to indicate registration failed
+                Navigator.pop(context, false);
               }
 
               // Navigator.push(

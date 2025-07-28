@@ -4,7 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:servxpert_frontend/auth/auth_service.dart';
 import 'package:servxpert_frontend/service_provider/service_providers_home_screen.dart';
 import 'package:servxpert_frontend/userApp/Customers_home_screen.dart';
-import 'package:servxpert_frontend/profileApp/registration_form.dart';
+import 'package:servxpert_frontend/registration_form/Registration_form1.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class AccountStatusService {
@@ -65,12 +65,12 @@ class AccountStatusService {
     }
   }
 
-  // Handle service provider registration flow
+  // Handle service provider registration flow using sequential forms
   static Future<bool> handleServiceProviderRegistration(BuildContext context) async {
     try {
       String accessToken = await _secureStorage.read(key: 'access_token') ?? '';
       
-      // Navigate to registration form
+      // Navigate to the first registration form (Registration_form1)
       final registered = await Navigator.push<bool>(
         context,
         MaterialPageRoute(
@@ -140,7 +140,7 @@ class AccountStatusService {
         );
         return true;
       } else if (eligibility['needsRegistration'] == true) {
-        // Need to register first
+        // Need to register first using sequential forms
         return await handleServiceProviderRegistration(context);
       } else {
         // Show appropriate message
