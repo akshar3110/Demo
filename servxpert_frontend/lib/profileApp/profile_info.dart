@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:servxpert_frontend/constant/colors.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 
 class ProfileInfo extends StatefulWidget {
@@ -31,15 +32,25 @@ class _ProfileInfoState extends State<ProfileInfo> {
     _phoneController = TextEditingController(text: widget.phoneNumber);
   }
 
-  void _saveDetails() {
+  void _saveDetails() async {
     if (_formKey.currentState!.validate()) {
       final updatedName = _nameController.text.trim();
       final updatedPhone = _phoneController.text.trim();
 
+      // Split name into first and last name
+      final nameParts = updatedName.split(' ');
+      final firstName = nameParts.isNotEmpty ? nameParts.first : '';
+      final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+
+      final storage = FlutterSecureStorage();
+      await storage.write(key: 'first_name', value: firstName);
+      await storage.write(key: 'last_name', value: lastName);
+      await storage.write(key: 'phone_number', value: updatedPhone);
+
       print("Updated Name: $updatedName");
       print("Updated Phone: $updatedPhone");
 
-      Navigator.pop(context);
+      Navigator.pop(context, {'firstName': firstName, 'lastName': lastName, 'phoneNumber': updatedPhone});
     }
   }
 
