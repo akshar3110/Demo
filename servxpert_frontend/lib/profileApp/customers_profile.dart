@@ -52,8 +52,13 @@ class _CustomerProfileState extends State<CustomerProfile> {
   }
 
   Future<String?> _getProfilePhoto() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('profile_photo');
+    final storage = FlutterSecureStorage();
+    return await storage.read(key: 'profile_photo');
+  }
+
+  Future<String?> _getPhoneNumber() async {
+    final storage = FlutterSecureStorage();
+    return await storage.read(key: 'phone_number');
   }
 
   void _handleSwipe(BuildContext context) async {
@@ -197,13 +202,14 @@ class _CustomerProfileState extends State<CustomerProfile> {
                       padding: const EdgeInsets.symmetric(horizontal: 25),
                       child: GestureDetector(
                         onTap: () async {
+                          final phoneNumber = await _getPhoneNumber() ?? '';
                           final result = await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => ProfileInfo(
                                 initialName: getDisplayName(),
                                 email: widget.email,
-                                phoneNumber: '',
+                                phoneNumber: phoneNumber,
                               ),
                             ),
                           );

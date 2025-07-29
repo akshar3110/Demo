@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:servxpert_frontend/models/api_service.dart';
 import 'package:servxpert_frontend/models/service_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:io';
 
 
@@ -81,8 +81,8 @@ class _RegistrationFormSkillsAndServicesState
 
   Future<void> loadServices() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('accessToken'); // ✅ Get token from local storage
+      final storage = FlutterSecureStorage();
+      final token = await storage.read(key: 'accessToken'); // ✅ Get token from secure storage
 
       if (token != null) {
         List<ServiceModel> fetched = await fetchServices(token); // ✅ Pass token
@@ -102,8 +102,8 @@ class _RegistrationFormSkillsAndServicesState
   }
 
   Future<String?> getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('accessToken');
+    final storage = FlutterSecureStorage();
+    return await storage.read(key: 'accessToken');
   }
 
   Widget buildRadioButton(String name, int id) {
@@ -164,7 +164,7 @@ class _RegistrationFormSkillsAndServicesState
               );
 
               try{
-                final prefs = await SharedPreferences.getInstance();
+                final storage = FlutterSecureStorage();
                 final token = widget.jwtToken;
 
                 if (token == null) {
